@@ -24,6 +24,11 @@ public class PlayerController : MonoBehaviour
         vel = input.normalized;
     }
 
+    public void LookAt(Vector3 point)   
+    {
+        Vector3 lookPoint = new Vector3(point.x, transform.position.y, point.z);
+        transform.LookAt(lookPoint);
+    }
     private void FixedUpdate()
     {
         body.MovePosition(body.position + vel * Time.fixedDeltaTime);
