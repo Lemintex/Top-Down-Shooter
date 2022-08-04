@@ -24,4 +24,9 @@ public class GunController : MonoBehaviour
         equippedGun = Instantiate(gunToEquip, gunHolder.position, gunHolder.rotation) as Gun;
         equippedGun.transform.parent = gunHolder;
     }
+
+    public void Shoot()
+    {
+        equippedGun.Shoot();
+    }
 }

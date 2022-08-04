@@ -8,17 +8,19 @@ public class Player : MonoBehaviour
     public float speed = 5f;
 
     Camera view;
-    PlayerController controller;
+    PlayerController playerController;
+    GunController gunController;
     void Start()
     {
-        controller = GetComponent<PlayerController>();
+        playerController = GetComponent<PlayerController>();
+        gunController = GetComponent<GunController>();
         view = Camera.main;
     }
 
     void Update()
     {
         Vector3 input = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
-        controller.Move(input);
+        playerController.Move(input);
 
         Ray ray = view.ScreenPointToRay(Input.mousePosition);
         Plane ground = new Plane(Vector3.up, Vector3.zero);
@@ -27,7 +29,12 @@ public class Player : MonoBehaviour
         {
             Vector3 point = ray.GetPoint(distance);
             Debug.DrawLine(ray.origin, point, Color.red);
-            controller.LookAt(point);
+            playerController.LookAt(point);
+        }
+
+        if(Input.GetMouseButton(0))
+        {
+            gunController.Shoot();
         }
     }
 }
