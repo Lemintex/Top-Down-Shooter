@@ -21,7 +21,7 @@ public class PlayerController : MonoBehaviour
 
     public void Move(Vector3 input)
     {
-        vel = input.normalized;
+        vel = input;
     }
 
     public void LookAt(Vector3 point)   

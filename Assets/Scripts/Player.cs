@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent (typeof (PlayerController))]
+[RequireComponent (typeof(GunController))]
 public class Player : MonoBehaviour
 {
     public float speed = 5f;
@@ -19,9 +20,12 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        // movement
         Vector3 input = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
-        playerController.Move(input);
+        Vector3 vec = input.normalized * speed;
+        playerController.Move(vec);
 
+        // look direction
         Ray ray = view.ScreenPointToRay(Input.mousePosition);
         Plane ground = new Plane(Vector3.up, Vector3.zero);
         float distance;
@@ -32,6 +36,7 @@ public class Player : MonoBehaviour
             playerController.LookAt(point);
         }
 
+        // shootng
         if(Input.GetMouseButton(0))
         {
             gunController.Shoot();

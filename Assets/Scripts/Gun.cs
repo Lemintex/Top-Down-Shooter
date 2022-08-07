@@ -17,6 +17,7 @@ public class Gun : MonoBehaviour
             nextShotTime = Time.time + timeBetweenShots / 1000;
             Projectile newProjectile = Instantiate(projectileType, muzzle.position, muzzle.rotation) as Projectile;
             newProjectile.setSpeed(muzzleVelocity);
+
         }
     }
 }
