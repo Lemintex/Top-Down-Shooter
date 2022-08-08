@@ -4,13 +4,15 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent (typeof(NavMeshAgent))]
-public class Enemy : MonoBehaviour
+public class Enemy : DamageableEntity
 {
     NavMeshAgent pathFinder;
     Transform target;
     // Start is called before the first frame update
-    void Start()
+    protected override void Start()
     {
+        base.startingHealth = 50;
+        base.Start();
         pathFinder = GetComponent<NavMeshAgent>();
         target = GameObject.FindGameObjectWithTag("Player").transform;
 
@@ -23,7 +25,10 @@ public class Enemy : MonoBehaviour
         while(target != null)
         {
             Vector3 targetPos = new Vector3(target.position.x, 0, target.position.z);
-            pathFinder.SetDestination(targetPos);
+            if (alive)
+            {
+                pathFinder.SetDestination(targetPos);
+            }
             yield return new WaitForSeconds(refreshRate);
         }
     }

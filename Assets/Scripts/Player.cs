@@ -2,17 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent (typeof (PlayerController))]
+[RequireComponent (typeof(PlayerController))]
 [RequireComponent (typeof(GunController))]
-public class Player : MonoBehaviour
+public class Player : DamageableEntity
 {
     public float speed = 5f;
 
     Camera view;
     PlayerController playerController;
     GunController gunController;
-    void Start()
+    protected override void Start()
     {
+        base.startingHealth = 100;
+        base.Start();
         playerController = GetComponent<PlayerController>();
         gunController = GetComponent<GunController>();
         view = Camera.main;

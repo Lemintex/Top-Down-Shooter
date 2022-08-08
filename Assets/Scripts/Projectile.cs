@@ -7,6 +7,7 @@ public class Projectile : MonoBehaviour
     public LayerMask layer;
     public float radius;
     float speed = 10;
+    public float damage = 10;
     // Start is called before the first frame update
     void Start()
     {
@@ -31,12 +32,17 @@ public class Projectile : MonoBehaviour
         RaycastHit hitInfo;
         if (Physics.Raycast(ray, out hitInfo, moveAmount, layer, QueryTriggerInteraction.Collide))//, layer))
         {
-            GameObject.Destroy(gameObject);
+            OnObjectHit(hitInfo);
         }
     }
 
     void OnObjectHit(RaycastHit hitInfo)
     {
+        IDamageable hitObject = hitInfo.collider.GetComponent<IDamageable>();
+        if (hitObject != null)
+        {
+            hitObject.Hit(damage, hitInfo);
+        }
         GameObject.Destroy(gameObject);
     }
 }
