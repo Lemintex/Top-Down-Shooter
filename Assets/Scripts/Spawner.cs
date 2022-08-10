@@ -29,6 +29,7 @@ public class Spawner : MonoBehaviour
         }
     }
 
+    // called when an enemy in the wave dies
     void OnEnemyDeath()
     {
         enemiesAlive--;
@@ -37,6 +38,8 @@ public class Spawner : MonoBehaviour
             NextWave();
         }
     }
+
+    // spawns the next wave
     void NextWave()
     {
         if (waveIndex < waves.Length)
@@ -49,7 +52,7 @@ public class Spawner : MonoBehaviour
         }
     }
 
-
+    // stores all the info for a wave
     [System.Serializable]
     public class Wave
     {

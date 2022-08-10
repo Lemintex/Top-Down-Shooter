@@ -6,21 +6,23 @@ public class Projectile : MonoBehaviour
 {
     public LayerMask layer;
     public float radius;
-    float speed = 10;
+    private float speed = 10;
     public float damage = 10;
-    // Start is called before the first frame update
+
+    float lifetime = 3;
+
     void Start()
     {
-        
+        Destroy(gameObject, lifetime);// destroy object after a few seconds    
     }
-
-    // Update is called once per frame
     void Update()
     {
         float moveAmount = speed * Time.deltaTime;
         CheckCollisions(moveAmount);
         transform.Translate(Vector3.forward * moveAmount);
     }
+
+    // called by gun to set the speed of the fired projectile
     public void setSpeed(float s)
     {
         speed = s;
@@ -36,6 +38,7 @@ public class Projectile : MonoBehaviour
         }
     }
 
+    // called when the projectile hits an entity
     void OnObjectHit(RaycastHit hitInfo)
     {
         IDamageable hitObject = hitInfo.collider.GetComponent<IDamageable>();

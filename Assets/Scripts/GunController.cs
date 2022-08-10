@@ -15,6 +15,8 @@ public class GunController : MonoBehaviour
            Equip(initialGun);
         }
     }
+
+    // equips gun if none equipped
     public void Equip(Gun gunToEquip)
     {
         if(equippedGun != null)
@@ -25,6 +27,7 @@ public class GunController : MonoBehaviour
         equippedGun.transform.parent = gunHolder;
     }
 
+    // shoot gun
     public void Shoot()
     {
         equippedGun.Shoot();

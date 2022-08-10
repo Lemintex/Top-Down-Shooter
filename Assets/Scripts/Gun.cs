@@ -10,6 +10,7 @@ public class Gun : MonoBehaviour
     public float muzzleVelocity = 1;
 
     float nextShotTime;
+    // shoots the gun
     public void Shoot()
     {
         if (Time.time > nextShotTime)

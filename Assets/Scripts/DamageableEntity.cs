@@ -16,6 +16,8 @@ public class DamageableEntity : MonoBehaviour, IDamageable
     {
         health = startingHealth;
     }
+
+    // called on entity hit
     public void Hit(float damage, RaycastHit hitInfo)
     {
         health -= damage;
@@ -25,6 +27,17 @@ public class DamageableEntity : MonoBehaviour, IDamageable
         }
     }
 
+    // called on entity damaged
+    public void Damage(float damage)
+    {
+        health -= damage;
+        if (health <= 0)
+        {
+            Die();
+        }
+    }
+
+    // called when entity dies
     protected void Die()
     {
         alive = false;

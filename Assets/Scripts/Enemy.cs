@@ -6,6 +6,7 @@ using UnityEngine.AI;
 [RequireComponent (typeof(NavMeshAgent))]
 public class Enemy : DamageableEntity
 {
+    // enum for state machine
     public enum State
     {
         IDLE,
@@ -16,6 +17,7 @@ public class Enemy : DamageableEntity
     
     NavMeshAgent pathFinder;
     Transform target;
+    DamageableEntity targetEntity;
 
     float attackDistance = 2.5f;
     float attackCooldown = 2;
@@ -25,33 +27,49 @@ public class Enemy : DamageableEntity
     float targetRadius;
     protected override void Start()
     {
-        base.startingHealth = 50;
         base.Start();
-        state = State.CHASING;
-        pathFinder = GetComponent<NavMeshAgent>();
-        target = GameObject.FindGameObjectWithTag("Player").transform;
+        startingHealth = 50;
+        // if there is no player there is nothing to chase
+        if (GameObject.FindGameObjectWithTag("Player") != null)
+        {
+            state = State.CHASING;
+            pathFinder = GetComponent<NavMeshAgent>();
+            target = GameObject.FindGameObjectWithTag("Player").transform;
+            targetEntity = target.GetComponent<DamageableEntity>();
+            targetEntity.OnDeath.AddListener(OnTargetDeath);
 
-        myRadius = GetComponent<CapsuleCollider>().radius;
-        targetRadius = target.GetComponent<CapsuleCollider>().radius;
+            myRadius = GetComponent<CapsuleCollider>().radius;
+            targetRadius = target.GetComponent<CapsuleCollider>().radius;
 
-        StartCoroutine(UpdatePath());
+            StartCoroutine(UpdatePath());
+        }
     }
 
     void Update()
     {
-        float squareDistanceToTarget = (target.position - transform.position).sqrMagnitude;
-
-        if (squareDistanceToTarget < Mathf.Pow(attackDistance + myRadius + targetRadius, 2))
+        if (state != State.IDLE)
         {
-            // close enough to dash, so try it
-            DashAttack();
+            float squareDistanceToTarget = (target.position - transform.position).sqrMagnitude;
+
+            if (squareDistanceToTarget < Mathf.Pow(attackDistance + myRadius + targetRadius, 2))
+            {
+                // close enough to dash, so try it
+                DashAttack();
+            }
         }
     }
 
+    // invoked when target dies
+    void OnTargetDeath()
+    {
+        state = State.IDLE;
+    }
+
+    // coroutine avoids recalculating the path every frame
     IEnumerator UpdatePath()
     {
         float refreshRate = 0.2f;
-        while(target != null)
+        while (state != State.IDLE)
         {
             if (state == State.CHASING)
             {
@@ -67,6 +85,7 @@ public class Enemy : DamageableEntity
         }
     }
 
+    // called when the enemy is close enough to the target to attack
     void DashAttack()
     {
         if (lastAttackTime + attackCooldown < Time.time)
@@ -78,6 +97,7 @@ public class Enemy : DamageableEntity
         }
     }
 
+    // coroutine handles smooth attack animation
     IEnumerator Attack()
     {
         Material material = GetComponent<Renderer>().material;
@@ -87,8 +107,15 @@ public class Enemy : DamageableEntity
         Vector3 positionToAttackTo = target.position - (dirToTarget * myRadius);
         float lungePercent = 0;
         float dashSpeed = 2;
+
+        bool hasAppliedDamage = false;
         while(lungePercent <= 1)
         {
+            if (lungePercent >= 0.5f && !hasAppliedDamage)
+            {
+                hasAppliedDamage = true;
+                targetEntity.Damage(1);
+            }
             lungePercent += Time.deltaTime * dashSpeed;
             float lerp = (-Mathf.Pow(lungePercent, 2) + lungePercent) * 4; // goes from 0 to 1 to 0
             Debug.Log(lerp);
@@ -97,6 +124,5 @@ public class Enemy : DamageableEntity
         }
         pathFinder.enabled = true;
         material.color = Color.black;
-        state = State.CHASING; 
     }
 }

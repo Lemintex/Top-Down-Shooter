@@ -13,8 +13,8 @@ public class Player : DamageableEntity
     GunController gunController;
     protected override void Start()
     {
-        base.startingHealth = 100;
         base.Start();
+        startingHealth = 1;
         playerController = GetComponent<PlayerController>();
         gunController = GetComponent<GunController>();
         view = Camera.main;
