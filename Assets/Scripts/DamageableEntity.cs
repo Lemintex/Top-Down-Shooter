@@ -18,7 +18,6 @@ public class DamageableEntity : MonoBehaviour, IDamageable
     }
     public void Hit(float damage, RaycastHit hitInfo)
     {
-        Debug.Log(health);
         health -= damage;
         if (health <= 0)
         {

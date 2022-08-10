@@ -23,7 +23,6 @@ public class Spawner : MonoBehaviour
         if (enemiesRemainingToSpawn > 0 && Time.time > spawnTime)
         {
             enemiesRemainingToSpawn--;
-            enemiesAlive++;
             spawnTime += currentWave.timeBetweenSpawns;
             Enemy spawnedEnemy = Instantiate(enemy, Vector3.zero, Quaternion.identity) as Enemy;
             spawnedEnemy.OnDeath.AddListener(OnEnemyDeath);
@@ -40,10 +39,14 @@ public class Spawner : MonoBehaviour
     }
     void NextWave()
     {
-        currentWave = waves[waveIndex];
-        waveIndex++;
-        enemiesRemainingToSpawn = currentWave.enemyCount;
-        enemiesAlive = enemiesRemainingToSpawn;
+        if (waveIndex < waves.Length)
+        {
+            currentWave = waves[waveIndex];
+            waveIndex++;
+            enemiesRemainingToSpawn = currentWave.enemyCount;
+            enemiesAlive = enemiesRemainingToSpawn;
+            spawnTime = Time.time;  
+        }
     }
 
 
