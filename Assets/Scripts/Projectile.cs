@@ -13,7 +13,12 @@ public class Projectile : MonoBehaviour
 
     void Start()
     {
-        Destroy(gameObject, lifetime);// destroy object after a few seconds    
+        Destroy(gameObject, lifetime);// destroy object after a few seconds
+        Collider[] initialCollisions = Physics.OverlapSphere(transform.position, 0.1f, layer);
+        if (initialCollisions.Length > 0)
+        {
+            OnObjectHit(initialCollisions[0]);
+        }
     }
     void Update()
     {
@@ -45,6 +50,17 @@ public class Projectile : MonoBehaviour
         if (hitObject != null)
         {
             hitObject.Hit(damage, hitInfo);
+        }
+        GameObject.Destroy(gameObject);
+    }
+
+    // called when a projectile spawns inside an entity
+    void OnObjectHit(Collider collider)
+    {
+        if (collider != null)
+        {
+            IDamageable hitObject = collider.GetComponent<IDamageable>();
+            hitObject.Damage(damage);
         }
         GameObject.Destroy(gameObject);
     }

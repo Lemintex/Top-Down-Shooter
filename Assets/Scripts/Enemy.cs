@@ -118,9 +118,12 @@ public class Enemy : DamageableEntity
             }
             lungePercent += Time.deltaTime * dashSpeed;
             float lerp = (-Mathf.Pow(lungePercent, 2) + lungePercent) * 4; // goes from 0 to 1 to 0
-            Debug.Log(lerp);
             transform.position = Vector3.Lerp(myPos, positionToAttackTo, lerp);
             yield return null;
+        }
+        if (state == State.ATTACKING) // if the state is idle the target has died
+        {
+            state = State.CHASING;
         }
         pathFinder.enabled = true;
         material.color = Color.black;

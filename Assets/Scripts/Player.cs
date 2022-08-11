@@ -13,8 +13,9 @@ public class Player : DamageableEntity
     GunController gunController;
     protected override void Start()
     {
+        startingHealth = 1;// set before base Start() to correctly initialise health
+
         base.Start();
-        startingHealth = 1;
         playerController = GetComponent<PlayerController>();
         gunController = GetComponent<GunController>();
         view = Camera.main;
@@ -34,7 +35,6 @@ public class Player : DamageableEntity
         if (ground.Raycast(ray, out distance))
         {
             Vector3 point = ray.GetPoint(distance);
-            Debug.DrawLine(ray.origin, point, Color.red);
             playerController.LookAt(point);
         }
 
