@@ -8,6 +8,7 @@ public class Projectile : MonoBehaviour
     public float radius;
     private float speed = 10;
     public float damage = 10;
+    float fastCompensation = 0.1f;
 
     float lifetime = 3;
 
@@ -22,8 +23,9 @@ public class Projectile : MonoBehaviour
     }
     void Update()
     {
+
         float moveAmount = speed * Time.deltaTime;
-        CheckCollisions(moveAmount);
+        CheckCollisions(moveAmount + fastCompensation);// fastCompensation is added to ensure bullet hits if the enemy barely dodges
         transform.Translate(Vector3.forward * moveAmount);
     }
 
@@ -32,12 +34,13 @@ public class Projectile : MonoBehaviour
     {
         speed = s;
     }
+
     // TODO: try a spherecast instead
     void CheckCollisions(float moveAmount)
     {
         Ray ray = new Ray(transform.position, transform.forward);
         RaycastHit hitInfo;
-        if (Physics.Raycast(ray, out hitInfo, moveAmount, layer, QueryTriggerInteraction.Collide))//, layer))
+        if (Physics.Raycast(ray, out hitInfo, moveAmount, layer, QueryTriggerInteraction.Collide))
         {
             OnObjectHit(hitInfo);
         }
