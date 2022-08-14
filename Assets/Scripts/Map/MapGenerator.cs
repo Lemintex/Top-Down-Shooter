@@ -6,24 +6,35 @@ public class MapGenerator : MonoBehaviour
 {
     public Transform tilePrefab;
     public Transform obstaclePrefab;
+    public Transform navmeshFloor;
+    public Transform navmeshBoundaryPrefab;
     public Vector2 mapSize;
+    public Vector2 maxMapSize;
 
     [Range(0, 1)]
     public float outlinePercent = 1;
+    [Range(0.1f, 10)]
+    public float tileSize = 1;
+    [Range(0, 1)]
+    public float obstaclePercent;
     public int obstacles = 5;
 
 
     List<Coord> allTileCoords;
     Queue<Coord> shuffledTileCoords;
+    Coord mapCentre;
 
     public int mapSeed = 0;
     void Start()
     {
         GenerateMap();    
     }
+
+    // regenerates the entire map structure
     public void GenerateMap()
     {
         allTileCoords = new List<Coord>();
+        mapCentre = new Coord((int)(mapSize.x / 2), (int)(mapSize.y / 2));
         for (int x = 0; x < mapSize.x; x++)
         {
             for (int y = 0; y < mapSize.y; y++)
@@ -45,28 +56,106 @@ public class MapGenerator : MonoBehaviour
         {
             for(int y = 0; y < mapSize.y; y++)
             {
-                Vector3 tilePosition = new Vector3(-mapSize.x / 2 + 0.5f + x, 0, -mapSize.y / 2 + 0.5f + y);
+                Vector3 tilePosition = new Vector3(-mapSize.x / 2 + 0.5f + x, 0, -mapSize.y / 2 + 0.5f + y) * tileSize;
                 Transform newTile = Instantiate(tilePrefab, tilePosition, Quaternion.Euler(Vector3.right * 90)) as Transform;
-                newTile.localScale = Vector3.one * outlinePercent;
+                newTile.localScale = Vector3.one * (1 - outlinePercent) * tileSize;
                 newTile.parent = holder;
             }
         }
+        obstacles = (int)(mapSize.x * mapSize.y * obstaclePercent); 
+        bool[,] obstacleBoolMap = new bool[(int)mapSize.x, (int)mapSize.y];
+        int currentObstacles = 0;
         for (int i = 0; i < obstacles; i++)
         {
             Coord randomCoord = GetRandomCoord();
-            Vector3 obstaclePosition = CoordToPosition(randomCoord);
-            Transform newObstacle = Instantiate(obstaclePrefab, obstaclePosition, Quaternion.identity) as Transform;
-            newObstacle.parent = holder;
-        }    
+            obstacleBoolMap[randomCoord.x, randomCoord.y] = true;
+            if (!randomCoord.Equals(mapCentre) && MapIsAccessible(obstacleBoolMap, currentObstacles + 1))
+            {
+                currentObstacles++;
+                Vector3 obstaclePosition = CoordToPosition(randomCoord);
+                obstaclePosition.y += (tileSize * (1 - outlinePercent)) / 2;  
+                Transform newObstacle = Instantiate(obstaclePrefab, obstaclePosition, Quaternion.identity) as Transform;
+                newObstacle.localScale = Vector3.one * (1 - outlinePercent) * tileSize;
+                newObstacle.parent = holder;
+            }
+            else
+            {
+                obstacleBoolMap[randomCoord.x, randomCoord.y] = false;
+            }
+        }
+        SetNavmeshBoundaries(holder);
     }
 
+    // initialise invisible boundaries to the Navmesh so the dumb AI doesn't walk off the edge
+    void SetNavmeshBoundaries(Transform holder)
+    {
+        // holy shit this is disgusting but I can't figure out a better alternative
+        // the only reason this hack is used is we can't bake at runtime
 
+        navmeshFloor.localScale = new Vector3(maxMapSize.x, maxMapSize.y, 0) * tileSize;// quad is rotate so z axis is now y axis
+
+        Transform boundaryLeft = Instantiate(navmeshBoundaryPrefab, Vector3.left * (mapSize.x + maxMapSize.x) / 4 * tileSize, Quaternion.identity) as Transform;
+        boundaryLeft.parent = holder;
+        boundaryLeft.localScale = new Vector3((maxMapSize.x - mapSize.x) / 2, 1, maxMapSize.y) * tileSize;
+
+        Transform boundaryRight = Instantiate(navmeshBoundaryPrefab, Vector3.right * (mapSize.x + maxMapSize.x) / 4 * tileSize, Quaternion.identity) as Transform;
+        boundaryRight.parent = holder;
+        boundaryRight.localScale = new Vector3((maxMapSize.x - mapSize.x) / 2, 1, maxMapSize.y) * tileSize;
+
+        Transform boundaryTop = Instantiate(navmeshBoundaryPrefab, Vector3.forward * (mapSize.y + maxMapSize.y) / 4 * tileSize, Quaternion.identity) as Transform;
+        boundaryTop.parent = holder;
+        boundaryTop.localScale = new Vector3(mapSize.x, 1, (maxMapSize.y - mapSize.y) / 2) * tileSize;
+
+        Transform boundaryBottom = Instantiate(navmeshBoundaryPrefab, Vector3.back * (mapSize.y + maxMapSize.y) / 4 * tileSize, Quaternion.identity) as Transform;
+        boundaryBottom.parent = holder;
+        boundaryBottom.localScale = new Vector3(mapSize.x, 1, (maxMapSize.y - mapSize.y) / 2) * tileSize;
+    }
+
+    // returns a Vector3 with the Coords world position
     Vector3 CoordToPosition(Coord coord)
     {
-        return new Vector3(-mapSize.x / 2 + 0.5f + coord.x, 0, -mapSize.y / 2 + 0.5f + coord.y);
+        return new Vector3(-mapSize.x / 2 + 0.5f + coord.x, 0, -mapSize.y / 2 + 0.5f + coord.y) * tileSize;
     }
 
+    // flood fill returns true if all empty tiles are adjacent
+    bool MapIsAccessible(bool[,] obstacleMap, int obstacleCount)
+    {
+        bool[,] mapFlags = new bool[obstacleMap.GetLength(0), obstacleMap.GetLength(1)];
+        Queue<Coord> queue = new Queue<Coord>();
+        queue.Enqueue(mapCentre);
+        mapFlags[mapCentre.x, mapCentre.y] = true;
+        int accessibleTiles = 1;
+        while(queue.Count > 0)
+        {
+            Coord tile = queue.Dequeue();
 
+            for(int x = -1; x <= 1; x++)
+            {
+                for (int y = -1; y <= 1; y++)
+                {
+                    if (x == 0 ^ y == 0)// XOR operator ensures we don't consider the tile we dequeued
+                    {
+                    int neighbourX = tile.x + x;
+                    int neighbourY = tile.y + y;
+                        if (neighbourX >= 0 && neighbourX < obstacleMap.GetLength(0) && neighbourY >= 0 && neighbourY < obstacleMap.GetLength(1))
+                        {
+                            if (!mapFlags[neighbourX, neighbourY] && !obstacleMap[neighbourX, neighbourY])
+                            {
+                                mapFlags[neighbourX, neighbourY] = true;
+                                queue.Enqueue(new Coord(neighbourX, neighbourY));
+                                accessibleTiles++;
+                            }
+                        }
+                    }
+                }
+                    
+            }
+        }
+        int target = (int)((mapSize.x * mapSize.y) - obstacleCount);
+        return target == accessibleTiles;
+    }
+
+    // returns the next random Coord in the random queue
     public Coord GetRandomCoord()
     {
         Coord coord = shuffledTileCoords.Dequeue();
