@@ -33,8 +33,9 @@ public class MapGenerator : MonoBehaviour
     {
         currentMap = maps[mapIndex];
 
+        System.Random rnd = new System.Random(currentMap.mapSeed);
         allTileCoords = new List<Coord>();
-
+        // generates all tile coords
         for (int x = 0; x < currentMap.mapSize.x; x++)
         {
             for (int y = 0; y < currentMap.mapSize.y; y++)
@@ -50,12 +51,14 @@ public class MapGenerator : MonoBehaviour
             DestroyImmediate(transform.Find(holderName).gameObject);// this has to be used instead of Destroy() due to editor
         }
 
-        //these offsets ensure the map is centred regardless of dimensions
+        // these offsets ensure the map is centred regardless of dimensions
         if (currentMap.mapSize.x % 2 == 0) currentMap.offsetX = 0.5f;
         if (currentMap.mapSize.y % 2 == 0) currentMap.offsetY = 0.5f;
 
         Transform holder = new GameObject(holderName).transform;
         holder.parent = transform;
+
+        // generates tiles
         for(int x = 0; x < currentMap.mapSize.x; x++)
         {
             for(int y = 0; y < currentMap.mapSize.y; y++)
@@ -66,6 +69,8 @@ public class MapGenerator : MonoBehaviour
                 newTile.parent = holder;
             }
         }
+
+        // generates obstacles
         obstacles = (int)(currentMap.mapSize.x * currentMap.mapSize.y * currentMap.obstaclePercent); 
         bool[,] obstacleBoolMap = new bool[(int)currentMap.mapSize.x, (int)currentMap.mapSize.y];
         int currentObstacles = 0;
@@ -77,10 +82,20 @@ public class MapGenerator : MonoBehaviour
             {
                 currentObstacles++;
                 Vector3 obstaclePosition = CoordToPosition(randomCoord);
-                obstaclePosition.y += tileSize * (1 - outlinePercent) / 2;  
+                float obstacleHeight = Mathf.Lerp(currentMap.minObstacleHeight, currentMap.maxObstacleHeight, (float)rnd.NextDouble());
+                obstaclePosition.y += obstacleHeight / 2;  
                 Transform newObstacle = Instantiate(obstaclePrefab, obstaclePosition, Quaternion.identity) as Transform;
-                newObstacle.localScale = Vector3.one * (1 - outlinePercent) * tileSize;
                 newObstacle.parent = holder;
+                newObstacle.localScale = new Vector3((1 - outlinePercent) * tileSize, obstacleHeight, (1 - outlinePercent) * tileSize);
+
+                // random colour for obstacle
+                Renderer obstacleRenderer = newObstacle.GetComponent<Renderer>();
+                Material obstacleMaterial = new Material(obstacleRenderer.sharedMaterial);
+                Color obstacleColour = Color.Lerp(currentMap.backgroundColour, currentMap.foregroundColour, (float)rnd.NextDouble());
+                obstacleMaterial.color = obstacleColour;
+
+                obstacleRenderer.sharedMaterial = obstacleMaterial;
+                // all that for a drop of colour?
             }
             else
             {
@@ -96,7 +111,7 @@ public class MapGenerator : MonoBehaviour
         // holy shit this is disgusting but I can't figure out a better alternative
         // the only reason this hack is used is we can't bake at runtime
 
-        navmeshFloor.localScale = new Vector3(maxMapSize.x, maxMapSize.y, 0) * tileSize;// quad is rotate so z axis is now y axis
+        navmeshFloor.localScale = new Vector3(maxMapSize.x, maxMapSize.y, 0) * tileSize;// quad is rotated so z axis is now y axis
 
         Transform boundaryLeft = Instantiate(navmeshBoundaryPrefab, Vector3.left * (currentMap.mapSize.x + maxMapSize.x) / 4 * tileSize, Quaternion.identity) as Transform;
         boundaryLeft.parent = holder;
@@ -180,6 +195,7 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
+    // this isn't in a seperate file because... I said so
     [System.Serializable]
     public class Map
     {
@@ -190,9 +206,10 @@ public class MapGenerator : MonoBehaviour
         public int mapSeed = 0;
 
         public float offsetX, offsetY;
-        [Range(0.1f, 1)]
-        public float minObstacleHeight;
-        public float maxObstacleHeight;
+        [Range(0.01f, 1)]
+        public float minObstacleHeight = 02f;
+        [Range(1, 4)]
+        public float maxObstacleHeight = 1;
         public Color foregroundColour;
         public Color backgroundColour;
 
