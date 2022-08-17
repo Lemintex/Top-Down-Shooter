@@ -51,10 +51,6 @@ public class MapGenerator : MonoBehaviour
             DestroyImmediate(transform.Find(holderName).gameObject);// this has to be used instead of Destroy() due to editor
         }
 
-        // these offsets ensure the map is centred regardless of dimensions
-        if (currentMap.mapSize.x % 2 == 0) currentMap.offsetX = 0.5f;
-        if (currentMap.mapSize.y % 2 == 0) currentMap.offsetY = 0.5f;
-
         Transform holder = new GameObject(holderName).transform;
         holder.parent = transform;
 
@@ -63,7 +59,7 @@ public class MapGenerator : MonoBehaviour
         {
             for(int y = 0; y < currentMap.mapSize.y; y++)
             {
-                Vector3 tilePosition = new Vector3(-currentMap.mapSize.x / 2 + currentMap.offsetX + x, 0, -currentMap.mapSize.y / 2 + currentMap.offsetY + y) * tileSize;
+                Vector3 tilePosition = new Vector3((-currentMap.mapSize.x + 1) / 2f + x, 0, (-currentMap.mapSize.y + 1) / 2f + y) * tileSize;
                 Transform newTile = Instantiate(tilePrefab, tilePosition, Quaternion.Euler(Vector3.right * 90)) as Transform;
                 newTile.localScale = Vector3.one * (1 - outlinePercent) * tileSize;
                 newTile.parent = holder;
@@ -91,7 +87,7 @@ public class MapGenerator : MonoBehaviour
                 // random colour for obstacle
                 Renderer obstacleRenderer = newObstacle.GetComponent<Renderer>();
                 Material obstacleMaterial = new Material(obstacleRenderer.sharedMaterial);
-                Color obstacleColour = Color.Lerp(currentMap.backgroundColour, currentMap.foregroundColour, (float)rnd.NextDouble());
+                Color obstacleColour = Color.Lerp(currentMap.backgroundColour, currentMap.foregroundColour, randomCoord.y / (float)currentMap.mapSize.y);
                 obstacleMaterial.color = obstacleColour;
 
                 obstacleRenderer.sharedMaterial = obstacleMaterial;
@@ -113,19 +109,19 @@ public class MapGenerator : MonoBehaviour
 
         navmeshFloor.localScale = new Vector3(maxMapSize.x, maxMapSize.y, 0) * tileSize;// quad is rotated so z axis is now y axis
 
-        Transform boundaryLeft = Instantiate(navmeshBoundaryPrefab, Vector3.left * (currentMap.mapSize.x + maxMapSize.x) / 4 * tileSize, Quaternion.identity) as Transform;
+        Transform boundaryLeft = Instantiate(navmeshBoundaryPrefab, Vector3.left * (currentMap.mapSize.x + maxMapSize.x) / 4f * tileSize, Quaternion.identity) as Transform;
         boundaryLeft.parent = holder;
         boundaryLeft.localScale = new Vector3((maxMapSize.x - currentMap.mapSize.x) / 2, 1, maxMapSize.y) * tileSize;
 
-        Transform boundaryRight = Instantiate(navmeshBoundaryPrefab, Vector3.right * (currentMap.mapSize.x + maxMapSize.x) / 4 * tileSize, Quaternion.identity) as Transform;
+        Transform boundaryRight = Instantiate(navmeshBoundaryPrefab, Vector3.right * (currentMap.mapSize.x + maxMapSize.x) / 4f * tileSize, Quaternion.identity) as Transform;
         boundaryRight.parent = holder;
         boundaryRight.localScale = new Vector3((maxMapSize.x - currentMap.mapSize.x) / 2, 1, maxMapSize.y) * tileSize;
 
-        Transform boundaryTop = Instantiate(navmeshBoundaryPrefab, Vector3.forward * (currentMap.mapSize.y + maxMapSize.y) / 4 * tileSize, Quaternion.identity) as Transform;
+        Transform boundaryTop = Instantiate(navmeshBoundaryPrefab, Vector3.forward * (currentMap.mapSize.y + maxMapSize.y) / 4f * tileSize, Quaternion.identity) as Transform;
         boundaryTop.parent = holder;
         boundaryTop.localScale = new Vector3(currentMap.mapSize.x, 1, (maxMapSize.y - currentMap.mapSize.y) / 2) * tileSize;
 
-        Transform boundaryBottom = Instantiate(navmeshBoundaryPrefab, Vector3.back * (currentMap.mapSize.y + maxMapSize.y) / 4 * tileSize, Quaternion.identity) as Transform;
+        Transform boundaryBottom = Instantiate(navmeshBoundaryPrefab, Vector3.back * (currentMap.mapSize.y + maxMapSize.y) / 4f * tileSize, Quaternion.identity) as Transform;
         boundaryBottom.parent = holder;
         boundaryBottom.localScale = new Vector3(currentMap.mapSize.x, 1, (maxMapSize.y - currentMap.mapSize.y) / 2) * tileSize;
     }
@@ -133,7 +129,7 @@ public class MapGenerator : MonoBehaviour
     // returns a Vector3 with the Coords world position
     Vector3 CoordToPosition(Coord coord)
     {
-        return new Vector3(-currentMap.mapSize.x / 2 + currentMap.offsetX + coord.x, 0, -currentMap.mapSize.y / 2 + currentMap.offsetY + coord.y) * tileSize;
+        return new Vector3((-currentMap.mapSize.x + 1) / 2f + coord.x, 0, (-currentMap.mapSize.y + 1) / 2f + coord.y) * tileSize;
     }
 
     // flood fill returns true if all empty tiles are adjacent
@@ -205,9 +201,9 @@ public class MapGenerator : MonoBehaviour
 
         public int mapSeed = 0;
 
-        public float offsetX, offsetY;
+
         [Range(0.01f, 1)]
-        public float minObstacleHeight = 02f;
+        public float minObstacleHeight = 0.2f;
         [Range(1, 4)]
         public float maxObstacleHeight = 1;
         public Color foregroundColour;
