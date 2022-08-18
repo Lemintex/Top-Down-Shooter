@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Spawner : MonoBehaviour
 {
+    public MapGenerator mapGenerator;
     public Wave[] waves;
     public Enemy enemy;
 
@@ -16,6 +17,7 @@ public class Spawner : MonoBehaviour
     private int enemiesAlive;
     void Start()
     {
+        mapGenerator = FindObjectOfType<MapGenerator>();
         NextWave();
     }
     void Update()
@@ -24,7 +26,8 @@ public class Spawner : MonoBehaviour
         {
             enemiesRemainingToSpawn--;
             spawnTime += currentWave.timeBetweenSpawns;
-            Enemy spawnedEnemy = Instantiate(enemy, Vector3.zero, Quaternion.identity) as Enemy;
+            Transform tile = mapGenerator.GetRandomSpawnableTile();
+            Enemy spawnedEnemy = Instantiate(enemy, tile.position, Quaternion.identity) as Enemy;
             spawnedEnemy.OnDeath.AddListener(OnEnemyDeath);
         }
     }

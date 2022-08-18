@@ -21,6 +21,9 @@ public class MapGenerator : MonoBehaviour
 
     List<Coord> allTileCoords;
     Queue<Coord> shuffledTileCoords;
+    Queue<Coord> shuffledSpawnableCoords;
+
+    Transform[,] tileArray;
 
     Map currentMap;
     void Start()
@@ -32,7 +35,7 @@ public class MapGenerator : MonoBehaviour
     public void GenerateMap()
     {
         currentMap = maps[mapIndex];
-
+        tileArray = new Transform[currentMap.mapSize.x, currentMap.mapSize.y];
         System.Random rnd = new System.Random(currentMap.mapSeed);
         allTileCoords = new List<Coord>();
         // generates all tile coords
@@ -63,8 +66,10 @@ public class MapGenerator : MonoBehaviour
                 Transform newTile = Instantiate(tilePrefab, tilePosition, Quaternion.Euler(Vector3.right * 90)) as Transform;
                 newTile.localScale = Vector3.one * (1 - outlinePercent) * tileSize;
                 newTile.parent = holder;
+                tileArray[x, y] = newTile;
             }
         }
+        List<Coord> spawnable = allTileCoords;
 
         // generates obstacles
         obstacles = (int)(currentMap.mapSize.x * currentMap.mapSize.y * currentMap.obstaclePercent); 
@@ -76,6 +81,7 @@ public class MapGenerator : MonoBehaviour
             obstacleBoolMap[randomCoord.x, randomCoord.y] = true;
             if (!randomCoord.Equals(currentMap.mapCentre) && MapIsAccessible(obstacleBoolMap, currentObstacles + 1))
             {
+                spawnable.Remove(randomCoord);
                 currentObstacles++;
                 Vector3 obstaclePosition = CoordToPosition(randomCoord);
                 float obstacleHeight = Mathf.Lerp(currentMap.minObstacleHeight, currentMap.maxObstacleHeight, (float)rnd.NextDouble());
@@ -98,6 +104,7 @@ public class MapGenerator : MonoBehaviour
                 obstacleBoolMap[randomCoord.x, randomCoord.y] = false;
             }
         }
+        shuffledSpawnableCoords = new Queue<Coord>(Utility.ShuffleArray(spawnable.ToArray(), currentMap.mapSeed));
         SetNavmeshBoundaries(holder);
     }
 
@@ -127,7 +134,7 @@ public class MapGenerator : MonoBehaviour
     }
 
     // returns a Vector3 with the Coords world position
-    Vector3 CoordToPosition(Coord coord)
+    public Vector3 CoordToPosition(Coord coord)
     {
         return new Vector3((-currentMap.mapSize.x + 1) / 2f + coord.x, 0, (-currentMap.mapSize.y + 1) / 2f + coord.y) * tileSize;
     }
@@ -171,12 +178,22 @@ public class MapGenerator : MonoBehaviour
     }
 
     // returns the next random Coord in the random queue
-    public Coord GetRandomCoord()
+    Coord GetRandomCoord()
     {
         Coord coord = shuffledTileCoords.Dequeue();
         shuffledTileCoords.Enqueue(coord);
         return coord;
     }
+
+    // returns the next spawnable tile in the spawnable queue
+    public Transform GetRandomSpawnableTile()
+    {
+        Coord randomCoord = shuffledSpawnableCoords.Dequeue();
+        shuffledSpawnableCoords.Enqueue(randomCoord);
+        Transform tile = tileArray[randomCoord.x, randomCoord.y];
+        return tile;
+    }
+
 
     [System.Serializable]
     public struct Coord
@@ -191,7 +208,7 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    // this isn't in a seperate file because... I said so
+    // this isn't in a seperate file because I said so... (it doesn't need to be)
     [System.Serializable]
     public class Map
     {
