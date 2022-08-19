@@ -35,9 +35,13 @@ public class MapGenerator : MonoBehaviour
     public void GenerateMap()
     {
         currentMap = maps[mapIndex];
+
+        GetComponent<BoxCollider>().size = new Vector3(currentMap.mapSize.x, 0.1f, currentMap.mapSize.y);// make the floor collider the correct size
+
         tileArray = new Transform[currentMap.mapSize.x, currentMap.mapSize.y];
         System.Random rnd = new System.Random(currentMap.mapSeed);
         allTileCoords = new List<Coord>();
+
         // generates all tile coords
         for (int x = 0; x < currentMap.mapSize.x; x++)
         {
@@ -208,7 +212,7 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    // this isn't in a seperate file because I said so... (it doesn't need to be)
+    // this isn't in a seperate file because I said so (it doesn't need to be)
     [System.Serializable]
     public class Map
     {

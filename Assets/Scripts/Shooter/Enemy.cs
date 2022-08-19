@@ -86,6 +86,7 @@ public class Enemy : DamageableEntity
     }
 
     // called when the enemy is close enough to the target to attack
+    // TODO: add a spherecast check so the enemy can't attack through walls
     void DashAttack()
     {
         if (lastAttackTime + attackCooldown < Time.time)

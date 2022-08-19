@@ -188,7 +188,7 @@ Transform:
   m_GameObject: {fileID: 7778306351005033487}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.48112917, y: 1.7198298, z: 0.73615074}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7778306350874576552}
@@ -210,8 +210,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   muzzle: {fileID: 3706101511846524600}
   projectileType: {fileID: 1621519488639650519, guid: d3404b462c0b44a4e9e74cfe664aa53b, type: 3}
-  timeBetweenShots: 250
-  muzzleVelocity: 15
+  timeBetweenShots: 100
+  muzzleVelocity: 25
 --- !u!1 &7778306351408336761
 GameObject:
   m_ObjectHideFlags: 0

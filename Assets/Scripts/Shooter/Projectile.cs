@@ -10,7 +10,7 @@ public class Projectile : MonoBehaviour
     public float damage = 10;
     float fastCompensation = 0.1f;
 
-    float lifetime = 3;
+    float lifetime = 2;
 
     void Start()
     {
@@ -30,7 +30,7 @@ public class Projectile : MonoBehaviour
     }
 
     // called by gun to set the speed of the fired projectile
-    public void setSpeed(float s)
+    public void SetSpeed    (float s)
     {
         speed = s;
     }
