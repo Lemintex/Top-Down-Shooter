@@ -36,7 +36,7 @@ public class MapGenerator : MonoBehaviour
     {
         currentMap = maps[mapIndex];
 
-        GetComponent<BoxCollider>().size = new Vector3(currentMap.mapSize.x, 0.1f, currentMap.mapSize.y);// make the floor collider the correct size
+        GetComponent<BoxCollider>().size = new Vector3(currentMap.mapSize.x * tileSize, 0.1f, currentMap.mapSize.y * tileSize);// make the floor collider the correct size
 
         tileArray = new Transform[currentMap.mapSize.x, currentMap.mapSize.y];
         System.Random rnd = new System.Random(currentMap.mapSeed);
@@ -141,6 +141,14 @@ public class MapGenerator : MonoBehaviour
     public Vector3 CoordToPosition(Coord coord)
     {
         return new Vector3((-currentMap.mapSize.x + 1) / 2f + coord.x, 0, (-currentMap.mapSize.y + 1) / 2f + coord.y) * tileSize;
+    }
+
+    // convers a given Vector3 position to the tile it's on
+    public Transform PositionToTile(Vector3 position)
+    {
+        int x = Mathf.RoundToInt((position.x / tileSize) + ((currentMap.mapSize.x - 1) / 2f));
+        int y = Mathf.RoundToInt((position.z / tileSize) + ((currentMap.mapSize.y - 1) / 2f));
+        return tileArray[x, y];
     }
 
     // flood fill returns true if all empty tiles are adjacent

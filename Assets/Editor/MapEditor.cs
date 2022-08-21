@@ -11,6 +11,14 @@ public class MapEditor : Editor
         base.OnInspectorGUI();
 
         MapGenerator map = target as MapGenerator;
+        if (DrawDefaultInspector())
+        {
             map.GenerateMap();
+        }
+
+        if (GUILayout.Button("Generate Map"))
+        {
+            map.GenerateMap();
+        }
     }
 }

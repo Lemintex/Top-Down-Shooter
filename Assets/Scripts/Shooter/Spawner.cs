@@ -15,22 +15,49 @@ public class Spawner : MonoBehaviour
     float spawnTime;
 
     private int enemiesAlive;
+
     void Start()
     {
         mapGenerator = FindObjectOfType<MapGenerator>();
         NextWave();
     }
+
+
     void Update()
     {
         if (enemiesRemainingToSpawn > 0 && Time.time > spawnTime)
         {
             enemiesRemainingToSpawn--;
             spawnTime += currentWave.timeBetweenSpawns;
-            Transform tile = mapGenerator.GetRandomSpawnableTile();
-            Enemy spawnedEnemy = Instantiate(enemy, tile.position, Quaternion.identity) as Enemy;
-            spawnedEnemy.OnDeath.AddListener(OnEnemyDeath);
+            StartCoroutine(SpawnEnemy());
         }
     }
+
+    // flash a tile and spawn an enemy
+    IEnumerator SpawnEnemy()
+    {
+        float flashTimeBeforeSpawn = 1;
+        float timesToFlash = 2;
+        timesToFlash *= 2;// double times to flash as Mathf.PingPong goes from 0 to length in t and length to 0 in 1 in t, so 2t is one full flash
+        Transform tile = mapGenerator.GetRandomSpawnableTile();
+        Material tileMaterial = tile.GetComponent<Renderer>().material;
+
+        Color originalTileColour = tileMaterial.color;
+        Color tileFlashColor = Color.blue;
+        float timer = 0;
+        while (timer < flashTimeBeforeSpawn)
+        {
+            timer += Time.deltaTime;
+
+            tileMaterial.color = Color.Lerp(originalTileColour, tileFlashColor, Mathf.PingPong(timer * timesToFlash, 1));
+            yield return null;
+        }
+        tileMaterial.color = originalTileColour;
+
+        Enemy spawnedEnemy = Instantiate(enemy, tile.position, Quaternion.identity) as Enemy;
+        spawnedEnemy.OnDeath.AddListener(OnEnemyDeath);
+    }
+
 
     // called when an enemy in the wave dies
     void OnEnemyDeath()
