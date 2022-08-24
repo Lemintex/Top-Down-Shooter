@@ -19,7 +19,7 @@ public class Enemy : DamageableEntity
     Transform target;
     DamageableEntity targetEntity;
 
-    float attackDistance = 2.5f;
+    float attackDistance = 0.5f;
     float attackCooldown = 2;
     float lastAttackTime;
 
@@ -59,7 +59,7 @@ public class Enemy : DamageableEntity
         }
     }
 
-    // invoked when target dies
+    // called when target dies2222222
     void OnTargetDeath()
     {
         state = State.IDLE;
@@ -75,7 +75,7 @@ public class Enemy : DamageableEntity
             {
                 Vector3 dirToTarget = (target.position - transform.position).normalized;
                 Vector3 targetPos = new Vector3(target.position.x, 0, target.position.z);
-                Vector3 positionToPathfindTo = targetPos - (dirToTarget * (myRadius + targetRadius));
+                Vector3 positionToPathfindTo = targetPos - dirToTarget * (myRadius + targetRadius - (attackDistance/2));
                 if (alive)
                 {
                     pathFinder.SetDestination(positionToPathfindTo);
@@ -99,6 +99,7 @@ public class Enemy : DamageableEntity
     }
 
     // coroutine handles smooth attack animation
+    // TODO: use Mathf.PingPong() instead
     IEnumerator Attack()
     {
         Material material = GetComponent<Renderer>().material;
@@ -112,7 +113,7 @@ public class Enemy : DamageableEntity
         bool hasAppliedDamage = false;
         while(lungePercent <= 1)
         {
-            if (lungePercent >= 0.5f && !hasAppliedDamage)
+            if (lungePercent >= 0.5f && !hasAppliedDamage) // TODO: check enemy and player are colliding before applying damage
             {
                 hasAppliedDamage = true;
                 targetEntity.Damage(1);

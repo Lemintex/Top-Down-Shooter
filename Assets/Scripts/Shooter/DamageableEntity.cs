@@ -17,6 +17,13 @@ public class DamageableEntity : MonoBehaviour, IDamageable
         health = startingHealth;
     }
 
+
+    public bool IsAlive()
+    {
+        return alive;
+    }
+
+
     // called on entity hit
     public void Hit(float damage, RaycastHit hitInfo)
     {

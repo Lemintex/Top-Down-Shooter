@@ -1,12 +1,25 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Spawner : MonoBehaviour
 {
+    enum State
+    {
+        PLAYING,
+        CAMPING,
+        DEAD
+    };
+    State playerState = State.PLAYING;
+
     public MapGenerator mapGenerator;
+    public UnityEvent<int> OnNewWave;
     public Wave[] waves;
     public Enemy enemy;
+
+    DamageableEntity playerEntity;
+    Transform playerTransform;
 
     Wave currentWave;
     int waveIndex = 0;
@@ -15,9 +28,19 @@ public class Spawner : MonoBehaviour
     float spawnTime;
 
     private int enemiesAlive;
+    Vector3 campPosition;
+    float campcheckTime;
+    const float campTresholdDistance = 1;// TODO: make sensible and calculated value
+    const float timeBetweenCampingChecks = 1;
 
     void Start()
     {
+        playerEntity = FindObjectOfType<Player>();
+
+        playerEntity.OnDeath.AddListener(OnPlayerDeath);
+        playerTransform = playerEntity.transform;
+        campPosition = playerTransform.position;
+        campcheckTime = timeBetweenCampingChecks + Time.time;
         mapGenerator = FindObjectOfType<MapGenerator>();
         NextWave();
     }
@@ -25,11 +48,40 @@ public class Spawner : MonoBehaviour
 
     void Update()
     {
-        if (enemiesRemainingToSpawn > 0 && Time.time > spawnTime)
+        if (playerState != State.DEAD)
         {
-            enemiesRemainingToSpawn--;
-            spawnTime += currentWave.timeBetweenSpawns;
-            StartCoroutine(SpawnEnemy());
+            CheckCamping();
+            if (enemiesRemainingToSpawn > 0 && Time.time > spawnTime)
+            {
+                enemiesRemainingToSpawn--;
+                spawnTime += currentWave.timeBetweenSpawns;
+                StartCoroutine(SpawnEnemy());
+            }
+        }
+    }
+
+    // called when the player dies
+    void OnPlayerDeath()
+    {
+        playerState = State.DEAD;
+    }
+
+    // checks if the player is moving around
+    void CheckCamping()
+    {
+        if (campcheckTime < Time.time)
+        {
+            campcheckTime = Time.time + timeBetweenCampingChecks;
+            bool isCamping = (Vector3.Distance(campPosition, playerTransform.position) < campTresholdDistance);
+            if (isCamping)
+            {
+                playerState = State.CAMPING;
+            }
+            else// if the player is dead this function won't be called
+            {
+                playerState = State.PLAYING;
+            }
+            campPosition = playerTransform.position;
         }
     }
 
@@ -39,7 +91,15 @@ public class Spawner : MonoBehaviour
         float flashTimeBeforeSpawn = 1;
         float timesToFlash = 2;
         timesToFlash *= 2;// double times to flash as Mathf.PingPong goes from 0 to length in t and length to 0 in 1 in t, so 2t is one full flash
-        Transform tile = mapGenerator.GetRandomSpawnableTile();
+        Transform tile;
+        if (playerState == State.CAMPING)
+        {
+            tile = mapGenerator.PositionToTile(playerTransform.position);
+        }
+        else
+        {
+            tile = mapGenerator.GetRandomSpawnableTile();
+        }
         Material tileMaterial = tile.GetComponent<Renderer>().material;
 
         Color originalTileColour = tileMaterial.color;
@@ -75,10 +135,14 @@ public class Spawner : MonoBehaviour
         if (waveIndex < waves.Length)
         {
             currentWave = waves[waveIndex];
-            waveIndex++;
             enemiesRemainingToSpawn = currentWave.enemyCount;
             enemiesAlive = enemiesRemainingToSpawn;
-            spawnTime = Time.time;  
+            spawnTime = Time.time;
+            if (OnNewWave != null)
+            {
+                OnNewWave.Invoke(waveIndex);
+            }
+            waveIndex++;
         }
     }
 
