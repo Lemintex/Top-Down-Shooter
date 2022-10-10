@@ -13,7 +13,7 @@ public class Player : DamageableEntity
     GunController gunController;
     protected override void Start()
     {
-        startingHealth = 100;// set before base Start() to correctly initialise health
+        startingHealth = 5;// set before base Start() to correctly initialise health
 
         base.Start();
         playerController = GetComponent<PlayerController>();

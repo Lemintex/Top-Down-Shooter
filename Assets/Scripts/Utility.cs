@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public static class Utility
 {
+    // generates and returns a shuffled version of the argument array
     public static T[] ShuffleArray<T>(T[] array, int seed)
     {
         System.Random rnd = new System.Random(seed);

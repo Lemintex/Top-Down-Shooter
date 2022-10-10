@@ -19,7 +19,7 @@ public class Enemy : DamageableEntity
     Transform target;
     DamageableEntity targetEntity;
 
-    float attackDistance = 0.5f;
+    float attackDistance = 1;
     float attackCooldown = 2;
     float lastAttackTime;
 
@@ -59,7 +59,7 @@ public class Enemy : DamageableEntity
         }
     }
 
-    // called when target dies2222222
+    // called when target dies
     void OnTargetDeath()
     {
         state = State.IDLE;
@@ -106,7 +106,7 @@ public class Enemy : DamageableEntity
         material.color = Color.red;
         Vector3 myPos = transform.position;// for some reason using transform.position directly in Vector3.Lerp doesn't work, so this is needed
         Vector3 dirToTarget = (target.position - transform.position).normalized;
-        Vector3 positionToAttackTo = target.position - (dirToTarget * myRadius);
+        Vector3 positionToAttackTo = target.position - (dirToTarget * myRadius / 3);
         float lungePercent = 0;
         float dashSpeed = 2;
 

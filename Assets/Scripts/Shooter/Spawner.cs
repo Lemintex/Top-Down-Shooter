@@ -90,7 +90,7 @@ public class Spawner : MonoBehaviour
     {
         float flashTimeBeforeSpawn = 1;
         float timesToFlash = 2;
-        timesToFlash *= 2;// double times to flash as Mathf.PingPong goes from 0 to length in t and length to 0 in 1 in t, so 2t is one full flash
+        timesToFlash *= 2;// double times to flash as Mathf.PingPong goes from 0 to length in t and length to 0 in t, so 2t is one full flash
         Transform tile;
         if (playerState == State.CAMPING)
         {

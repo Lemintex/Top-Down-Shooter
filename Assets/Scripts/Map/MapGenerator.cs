@@ -153,7 +153,10 @@ public class MapGenerator : MonoBehaviour
     public Transform PositionToTile(Vector3 position)
     {
         int x = Mathf.RoundToInt((position.x / tileSize) + ((currentMap.mapSize.x - 1) / 2f));
+        x = Mathf.Clamp(x, 0, currentMap.mapSize.x - 1);
+
         int y = Mathf.RoundToInt((position.z / tileSize) + ((currentMap.mapSize.y - 1) / 2f));
+        y = Mathf.Clamp(x, 0, currentMap.mapSize.y - 1);
         return tileArray[x, y];
     }
 
