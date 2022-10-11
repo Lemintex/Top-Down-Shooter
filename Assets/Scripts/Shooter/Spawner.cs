@@ -20,7 +20,7 @@ public class Spawner : MonoBehaviour
 
     DamageableEntity playerEntity;
     Transform playerTransform;
-
+    Vector3 initialPlayerPosition;
     Wave currentWave;
     int waveIndex = 0;
 
@@ -38,7 +38,9 @@ public class Spawner : MonoBehaviour
         playerEntity = FindObjectOfType<Player>();
 
         playerEntity.OnDeath.AddListener(OnPlayerDeath);
+
         playerTransform = playerEntity.transform;
+        initialPlayerPosition = playerTransform.position;
         campPosition = playerTransform.position;
         campcheckTime = timeBetweenCampingChecks + Time.time;
         mapGenerator = FindObjectOfType<MapGenerator>();
@@ -65,6 +67,7 @@ public class Spawner : MonoBehaviour
     {
         playerState = State.DEAD;
     }
+
 
     // checks if the player is moving around
     void CheckCamping()
@@ -143,7 +146,14 @@ public class Spawner : MonoBehaviour
                 OnNewWave.Invoke(waveIndex);
             }
             waveIndex++;
+
+            ResetPlayerPosition();
         }
+    }
+
+    void ResetPlayerPosition()
+    {
+        playerTransform.position = initialPlayerPosition;
     }
 
     // stores all the info for a wave
