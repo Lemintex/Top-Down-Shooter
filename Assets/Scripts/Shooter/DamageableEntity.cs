@@ -45,6 +45,7 @@ public class DamageableEntity : MonoBehaviour, IDamageable
     }
 
     // called when entity dies
+    [ContextMenu("Kill")]
     protected void Die()
     {
         alive = false;

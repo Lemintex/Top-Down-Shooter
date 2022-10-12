@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameUI : MonoBehaviour
@@ -29,6 +30,12 @@ public class GameUI : MonoBehaviour
             fadeImage.color = Color.Lerp(from, to, percent);
             yield return null;
         }
+    }
+
+    public void RestartGame()
+    {
+        Debug.Log("R");
+        SceneManager.LoadScene("MapGenerator");
     }
         
 }
